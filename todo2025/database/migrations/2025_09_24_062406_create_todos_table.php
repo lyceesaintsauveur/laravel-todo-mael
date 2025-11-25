@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('texte');
             $table->boolean('termine')->default(0);
             $table->boolean('important')->default(0);
-            #Déclaraction de la clé primaire
+            // Déclaraction de la clé primaire
             $table->primary('id');
             $table->timestamps();
             /* Utilisation de soft deletes */

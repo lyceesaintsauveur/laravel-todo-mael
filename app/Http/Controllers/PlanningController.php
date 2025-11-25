@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Todos;
+use Illuminate\Http\Request;
+
 class PlanningController extends Controller
 {
     /**
@@ -11,7 +12,7 @@ class PlanningController extends Controller
      */
     public function index(Request $request)
     {
-         return view("planning", ["todos" => Todos::whereNotNull('date_fin')->orderBy('date_fin', 'asc')->where('id_user', $request->user()->id)->get()]);
+        return view('planning', ['todos' => Todos::whereNotNull('date_fin')->orderBy('date_fin', 'asc')->where('id_user', $request->user()->id)->get()]);
     }
 
     /**

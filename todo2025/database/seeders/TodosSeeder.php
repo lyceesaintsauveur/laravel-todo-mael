@@ -2,11 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Seeder;
-
-use App\Model\Todos;
+use Illuminate\Support\Facades\DB;
 
 class TodosSeeder extends Seeder
 {
@@ -16,12 +13,12 @@ class TodosSeeder extends Seeder
     public function run(): void
     {
         $todos = [
-            "Faire les courses",
-            "Arroser les plantes",
-            "Répondre aux e-mails",
-            "Nettoyer la cuisine",
-            "Sortir le chien",
-            "Préparer la réunion de lundi"
+            'Faire les courses',
+            'Arroser les plantes',
+            'Répondre aux e-mails',
+            'Nettoyer la cuisine',
+            'Sortir le chien',
+            'Préparer la réunion de lundi',
         ];
 
         $data = [];
@@ -40,5 +37,4 @@ class TodosSeeder extends Seeder
 
         DB::table('todos')->insert($data);
     }
-
 }

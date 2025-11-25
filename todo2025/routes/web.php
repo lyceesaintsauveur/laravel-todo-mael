@@ -1,12 +1,12 @@
 <?php
 
-//use App\Http\Controllers\ProfileController;
+// use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TodosController;
-//use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
-//use Inertia\Inertia;
-
+// use Illuminate\Foundation\Application;
 use App\Models\Todos;
+// use Inertia\Inertia;
+
+use Illuminate\Support\Facades\Route;
 
 // Route::bind('todos', function ($value) {
 //     return Todos::with('categories')->find($value) ?? abort(404);
@@ -17,7 +17,7 @@ Route::get('/todos/{todos}', function (Todos $todos) {
     return view('todo.show', compact('todos'));
 });
 
-//Route::get('/', [TodosController::class, 'liste']);
+// Route::get('/', [TodosController::class, 'liste']);
 Route::get('/', [TodosController::class, 'liste'])->name('todo.liste');
 
 // Envoie du formulaire via la méthode POST pour l'enregister dans la base de donnée
@@ -36,8 +36,7 @@ Route::get('/compteur', [TodosController::class, 'stats'])->name('todo.compteur'
 Route::get('/search', [TodosController::class, 'search'])->name('todos.search');
 Route::post('/search', [TodosController::class, 'search'])->name('todos.search');
 
-Route::view ('/test', 'template');
-
+Route::view('/test', 'template');
 
 // Route::get('/dashboard', function () {
 //     return Inertia::render('Dashboard');

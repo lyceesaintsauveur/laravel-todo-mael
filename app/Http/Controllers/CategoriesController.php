@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Categories;
 
 class CategoriesController extends Controller
@@ -14,6 +13,6 @@ class CategoriesController extends Controller
      */
     public function listeCatégories()
     {
-        return view("home", ["categories" => Categories::all()]);
+        return view('home', ['categories' => Categories::all()]);
     }
 }
