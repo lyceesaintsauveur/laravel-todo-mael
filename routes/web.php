@@ -1,9 +1,6 @@
 <?php
 
-use App\Http\Controllers\ListesController;
-use App\Http\Controllers\PlanningController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\TodosController;
+use App\Http\Controllers\{ListesController, PlanningController, ProfileController, TodosController};
 // use Illuminate\Foundation\Application;
 use App\Models\Todos;
 use Illuminate\Support\Facades\Route;
@@ -54,4 +51,7 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-require __DIR__.'/auth.php';
+// Route:: middleware('throttle:10,1')-> groupe(fonction () {    
+//     Route :: post('/login', [LoginController::class, 'login']);
+// });
+require __DIR__ . '/auth.php';

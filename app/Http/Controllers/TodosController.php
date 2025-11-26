@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Categories;
-use App\Models\Listes;
-use App\Models\Todos;
+use App\Models\{Categories, Listes, Todos};
+use \Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
 
 class TodosController extends Controller
@@ -34,7 +33,13 @@ class TodosController extends Controller
             $todo->listes_id = $liste;
             $todo->id_user = $id_user;
             $todo->date_fin = $date_fin;
-
+            try{
+            $request->validate([
+            'text' => ['required', 'max:255'], ]);
+            } catch (ValidationException $e) {
+                return redirect()->route('todo.liste')->with('message', 'La note dépasse le nombre de caractères autorisés (255)');
+            }
+            
             // save() pour mettre a jour et insérer des éléments dans la base
             $todo->save();
 

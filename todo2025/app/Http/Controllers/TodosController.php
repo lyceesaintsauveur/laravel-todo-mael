@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Categories;
-use App\Models\Todos;
+use App\Models\{Categories, Todos};
 use Illuminate\Http\Request;
 
 class TodosController extends Controller

@@ -1,0 +1,20 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "binary_operator_spaces": {
+            "default": "single_space"
+        },
+        "concat_space": {
+            "spacing": "one"
+        },
+        "ordered_imports": {
+            "sort_algorithm": "alpha"
+        },
+
+        "blank_line_between_import_groups":true,
+        "single_quote": true,
+        "no_unused_imports": true,
+        "single_import_per_statement":false,
+        "group_import":true
+    }
+}

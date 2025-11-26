@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Listes;
-use App\Models\Todos;
+use App\Models\{Listes, Todos};
 use Illuminate\Http\Request;
 
 class ListesController extends Controller
