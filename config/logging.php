@@ -98,16 +98,16 @@ return [
             ],
             'processors' => [PsrLogMessageProcessor::class],
         ],
-            'security' => [
+        'security' => [
             'driver' => 'single',
-            'path'   => storage_path('logs/security.log'),
-            'level'  => 'warning',
-         ],
-            'connexion' => [
+            'path' => storage_path('logs/security.log'),
+            'level' => 'warning',
+        ],
+        'connexion' => [
             'driver' => 'single',
-            'path'   => storage_path('logs/connexion.log'),
+            'path' => storage_path('logs/connexion.log'),
             // Gestion du niveaux de logs dans le .env
-            'level'  => env('LOG_LEVEL', 'debug'),
+            'level' => env('LOG_LEVEL', 'debug'),
         ],
         'stderr' => [
             'driver' => 'monolog',

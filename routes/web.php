@@ -51,7 +51,7 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Route:: middleware('throttle:10,1')-> groupe(fonction () {    
+// Route:: middleware('throttle:10,1')-> groupe(fonction () {
 //     Route :: post('/login', [LoginController::class, 'login']);
 // });
 require __DIR__ . '/auth.php';
