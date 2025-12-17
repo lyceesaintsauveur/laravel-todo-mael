@@ -4,25 +4,39 @@ namespace App\Http\Controllers;
 
 use App\Models\{Categories, Listes, Todos};
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Validator;
 
 class TodosController extends Controller
 {
-    public function liste(Request $request)
+    public function liste()
     {
-        return view('home', ['todos' => Todos::where('user_id', $request->user()->id)->get(), 'categories' => Categories::all(), 'listes' => Listes::all()]);
-        // where('id_user', $request->user()->id)
+        $user = auth()->user();
+
+        return view('home', [
+            'todos' => $user->todos()->with('categories', 'listes')->get(),
+            'categories' => Categories::all(),
+            'listes' => Listes::all(),
+        ]);
+
     }
 
     public function saveTodo(Request $request)
     {
         $texte = $request->input('texte');
         $priority = $request->input('priority');
-        $liste = $request->input('liste_id');
-        $date_fin = $request->input('date_fin');
-        $id_user = $request->user()->id;
+        $listeId = $request->input('listes_id');
+        $dateFin = $request->input('date_fin');
+        $categories = $request->input('categories', []);
+        // dd($request->input('priority')); // fonction de débug
 
-        // dd($request->input('categorie')); // fonction de débug
+        $validator = Validator::make($request->all(), [
+            'texte' => 'required|string|min:3|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('todo.liste')->with('message', 'Erreur dans la saisie du texte');
+
+        }
 
         if ($texte) {
             // création d'un nouvel élément Todos et enregistrement dans la base de donnée
@@ -30,22 +44,39 @@ class TodosController extends Controller
             $todo->texte = $texte;
             $todo->termine = 0;
             $todo->important = $priority;
-            $todo->listes_id = $liste;
-            $todo->id_user = $id_user;
-            $todo->date_fin = $date_fin;
-            try {
-                $request->validate([
-                    'text' => ['required', 'max:255'], ]);
-            } catch (ValidationException $e) {
-                return redirect()->route('todo.liste')->with('message', 'La note dépasse le nombre de caractères autorisés (255)');
+            // lier à une liste si fournie
+            if ($listeId) {
+                $todo->listes_id = $listeId;
             }
+            // assigner la date de fin si fournie
+            if ($dateFin) {
+                $todo->date_fin = $dateFin;
+            }
+
+            // assigner le ToDo à l'utilisateur connecté
+            $todo->user_id = auth()->id();
 
             // save() pour mettre a jour et insérer des éléments dans la base
             $todo->save();
 
+            // Attacher les catégories sélectionnées
+            if (! empty($categories)) {
+                $todo->categories()->attach($categories);
+            }
+
+            // Si la requête vient de la page listes, retourner sur listess.index
+            if ($request->input('from_listes')) {
+                return redirect()->route('listes.index');
+            }
+
             // après la modification on retourne sur notre vue "home" qui a comme nom "todo.liste"
             return redirect()->route('todo.liste');
         } else {
+            // Si la requête vient de la page listes, rediriger vers listes.index
+            if ($request->input('from_listes')) {
+                return redirect()->route('listes.index')->with('message', 'Veuillez saisir une note à ajouter');
+            }
+
             return redirect()->route('todo.liste')->with('message', 'Veuillez saisir une note à ajouter');
         }
 
@@ -53,52 +84,63 @@ class TodosController extends Controller
 
     public function upImportance($id)
     {
-        // Récupère le Todo par son id on utilise find() ou findOrFail()
-        $todo = Todos::find($id);
+        $todo = auth()->user()->todos()->findOrFail($id);
         $todo->important = 1;
-        $todo->save(); // save() pour mettre a jour et insérer des éléments dans la base
+        $todo->save();
 
         return redirect()->route('todo.liste');
     }
 
     public function downImportance($id)
     {
-        $todo = Todos::find($id);
+        $todo = auth()->user()->todos()->findOrFail($id);
         $todo->important = 0;
         $todo->save();
 
         return redirect()->route('todo.liste');
     }
 
-    public function done($id)
+    public function done(\Illuminate\Http\Request $request, $id)
     {
-        $todo = Todos::find($id);
-        // Inverser la valeur actuelle de "termine"
+        $todo = auth()->user()->todos()->findOrFail($id);
         $todo->termine = ! $todo->termine;
         $todo->save();
+        if ($request->input('from_listes')) {
+            return redirect()->route('listes.index');
+        }
 
         return redirect()->route('todo.liste');
     }
 
-    public function delete($id)
+    public function delete(\Illuminate\Http\Request $request, $id)
     {
-        $todo = Todos::find($id);
+        $todo = auth()->user()->todos()->findOrFail($id);
         if ($todo->termine) {
             $todo->delete();
+            if ($request->input('from_listes')) {
+                return redirect()->route('listes.index');
+            }
 
             return redirect()->route('todo.liste');
         } else {
+            if ($request->input('from_listes')) {
+                return redirect()
+                    ->route('listes.index')
+                    ->with('message', 'Veuillez terminé la tache avant de la supprimer');
+            }
+
             return redirect()
                 ->route('todo.liste')
-                ->with('message', 'Veuillez terminé la tache avant de la supprimé');
+                ->with('message', 'Veuillez terminé la tache avant de la supprimer');
         }
     }
 
     public function stats()
     {
-        $terminees = Todos::where('termine', 1)->count();
-        $nonTerminees = Todos::where('termine', 0)->count();
-        $supprimees = Todos::onlyTrashed()->count();
+        $userId = auth()->id();
+        $terminees = Todos::forUser($userId)->where('termine', 1)->count();
+        $nonTerminees = Todos::forUser($userId)->where('termine', 0)->count();
+        $supprimees = Todos::onlyTrashed()->forUser($userId)->count();
 
         return view('compteur', compact('terminees', 'nonTerminees', 'supprimees'));
     }
@@ -110,10 +152,21 @@ class TodosController extends Controller
         $todos = [];
 
         if ($keyword) {
-            $todos = Todos::where('texte', 'LIKE', "%{$keyword}%")
-                ->get();
+            $todos = Todos::forUser(auth()->id())->where('texte', 'LIKE', "%{$keyword}%")->get();
         }
 
         return view('search', compact('todos', 'keyword'));
+    }
+
+    public function planning()
+    {
+        // Récupérer les todos non terminés avec une date de fin, classés par urgence (du plus urgent au moins urgent)
+        $todos = auth()->user()->todos()
+            ->where('termine', 0)
+            ->whereNotNull('date_fin')
+            ->orderBy('date_fin', 'ASC')
+            ->get();
+
+        return view('planning', compact('todos'));
     }
 }
