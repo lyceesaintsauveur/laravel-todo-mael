@@ -17,3 +17,5 @@ class CategoriesController extends Controller
         return view('home', ['categories' => Categories::all()]);
     }
 }
+ code foireux 
+ vraiment 
