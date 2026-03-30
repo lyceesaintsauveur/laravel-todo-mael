@@ -8,16 +8,31 @@ use Illuminate\Support\Facades\Validator;
 
 class TodosController extends Controller
 {
-    public function liste()
+    public function liste(Request $request)
     {
         $user = auth()->user();
+        $filter = $request->query('filter', 'all');
+
+        $query = $user->todos()->with('categories', 'listes');
+
+        if ($filter === 'active') {
+            $query->where('termine', 0);
+        } elseif ($filter === 'completed') {
+            $query->where('termine', 1);
+        }
+
+        $todos = $query->get();
+
+        if ($request->ajax()) {
+            return view('partials.todos_list', compact('todos'));
+        }
 
         return view('home', [
-            'todos' => $user->todos()->with('categories', 'listes')->get(),
+            'todos' => $todos,
             'categories' => Categories::all(),
             'listes' => Listes::all(),
+            'currentFilter' => $filter,
         ]);
-
     }
 
     public function saveTodo(Request $request)
