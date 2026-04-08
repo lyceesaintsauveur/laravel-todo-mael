@@ -7,7 +7,48 @@
 @section("content")
 <div class="container pt-4">
     <div class="card">
-        <div class="card-body">
+        <div class="card-body" x-data="{ 
+            filter: '{{ $currentFilter }}',
+            loading: false,
+            fetchTodos(newFilter) {
+                this.filter = newFilter;
+                this.loading = true;
+                // Met à jour l'URL sans recharger la page
+                const url = new URL(window.location);
+                url.searchParams.set('filter', newFilter);
+                window.history.pushState({}, '', url);
+
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('todos-list').innerHTML = html;
+                    this.loading = false;
+                });
+            }
+        }">
+            <!-- Navigation des filtres -->
+            <div class="btn-group mb-3 w-100" role="group" aria-label="Filtres ToDo">
+                <button type="button" @click="fetchTodos('all')" 
+                    :class="filter === 'all' ? 'btn btn-primary' : 'btn btn-outline-primary'"
+                    class="btn">
+                    Toutes
+                </button>
+                <button type="button" @click="fetchTodos('active')" 
+                    :class="filter === 'active' ? 'btn btn-primary' : 'btn btn-outline-primary'"
+                    class="btn">
+                    En cours
+                </button>
+                <button type="button" @click="fetchTodos('completed')" 
+                    :class="filter === 'completed' ? 'btn btn-primary' : 'btn btn-outline-primary'"
+                    class="btn">
+                    Terminées
+                </button>
+            </div>
+
             <!-- Action -->
             <form action="{{ route('todo.save') }}" method="POST" class="add">
                 @csrf <!-- <<L'annotation ici ! -->
@@ -47,60 +88,8 @@
             </form>
 
             <!-- Liste -->
-            <ul class="list-group">
-                @forelse ($todos as $todo)
-                    <li class="list-group-item">
-                        <!-- Affichage de la priorité -->
-                        @if ($todo->important == 0)
-                            <i class="bi bi-reception-1"></i>
-                        @elseif ($todo->important == 1)
-                            <i class="bi bi-reception-4"></i>
-                        @endif
-                        <!-- Affichage du texte -->
-                        <span>{{ $todo->texte }}</span>
-                         </br>
-                        <span>a faire avant le :{{ $todo->date_fin }}</span>
-                            <!-- Affichage de la catégorie -->
-                            
-                        @if (!empty($todo->categories)&& $todo->categories->count()>0)
-                        <div class="form-group">
-                            <label><i class="bi bi-boxes">categories</label>
-                            @foreach($todo->categories as $category)
-                                <span>{{$category->libelle}}</span>  
-                            @endforeach
-                        </div>
-                        @endif   
-                        
-                        <!-- Affichage de la listes -->
-                          @if ($todo->listes)
-                                <p><i class="bi bi-list"></i> Appartient a la liste : {{ $todo->listes->libelle }}</p>
-                            @endif 
-                        <!-- Action à ajouter pour Terminer et supprimer -->
-                        @if ($todo->termine === 0)
-                            <!-- Si un ToDo n'est pas terminé, Action à ajouter pour terminer -->
-                            <a href="{{ route('todo.done', ['id' => $todo->id]) }}" class="btn btn-success"><i class="bi bi-check2-square"></i></a>
-                            <!--<button class="btn btn-primary btn-lg"><span class="fa fa-user"></span><br>Terminer</button>-->
-                        @elseif ($todo->termine === 1)
-                            <!-- Si un ToDo est terminé, Action à ajouter pour supprimer -->
-                            <a href="{{ route('todo.delete', ['id' => $todo->id]) }}" class="btn btn-danger btn-delete-todo" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-delete-url="{{ route('todo.delete', ['id' => $todo->id]) }}"><i class="bi bi-trash3"></i></i></a>
-                            @if (session('validation'))
-                                <p class="alert alert-success">{{ session('validation') }}</p>
-                            @endif
-                        @endif
-
-                       
-
-                        @if ($todo->important == 0)
-                            <!-- Action à ajouter pour monter la priorité -->
-                            <a href="{{ route('todo.raise', ['id'=> $todo->id]) }}"><i class="bi bi-arrow-up-circle"></i></a>
-                        @elseif ($todo->important == 1)
-                            <!-- Action à ajouter pour descendre la priorité -->
-                            <a href="{{ route('todo.lower', ['id' => $todo->id]) }}"><i class="bi bi-arrow-down-circle"></i></a>
-                        @endif
-                    </li>
-                @empty
-                    <li class="list-group-item text-center">C'est vide !</li>
-                @endforelse
+            <ul class="list-group" id="todos-list" :style="loading ? 'opacity: 0.5' : ''">
+                @include('partials.todos_list')
             </ul>
         </div>
     </div>
