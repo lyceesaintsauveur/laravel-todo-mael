@@ -19,6 +19,14 @@ WORKDIR /app
 # les scripts post-install de Composer)
 COPY . .
 
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-progress \
+    --optimize-autoloader \
+    --prefer-dist \
+    --ignore-platform-req=ext-zip
+
 # Installation des dépendances PHP sans les packages de dev
 RUN composer install --no-dev --no-interaction \
     --optimize-autoloader --prefer-dist
