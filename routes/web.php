@@ -17,7 +17,7 @@ use Inertia\Inertia;
 
 Route::get('/compteur', [TodosController::class, 'stats'])->name('todo.compteur');
 Route::get('/search', [TodosController::class, 'search'])->name('todos.search');
-Route::post('/search', [TodosController::class, 'search'])->name('todos.search');
+Route::post('/search', [TodosController::class, 'search'])->name('todos.searchpost');
 
 // Route::view ('/test', 'template');
 
